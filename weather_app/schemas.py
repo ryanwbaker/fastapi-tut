@@ -33,3 +33,10 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+
+class City(BaseModel):
+    city: str
+    country: str
+
+class CityOut(City):
+    city_id: int

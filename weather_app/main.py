@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
+from .country_codes import country_codes
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -50,4 +51,23 @@ def create_item_for_user(
 @app.get("/items/", response_model=list[schemas.Item])
 def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
+    return items
+
+@app.get("/cities/", response_model=list[schemas.CityOut])
+def read_cities(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+    items = crud.get_cities(db, skip=skip, limit=limit)
+    return items
+
+@app.post("/cities/", response_model=list[schemas.CityOut])
+def create_city(city: schemas.City, db: Session = Depends(get_db)):
+    db_city = crud.get_city_by_name_country(db, city=city.city, country=city.country)
+    if db_city:
+        raise HTTPException(status_code=400, detail="City already in database")
+    if city.country not in country_codes:
+        raise HTTPException(status_code=400, detail="Invalid Country Code")
+    return crud.create_city(db=db, city=city)
+
+@app.get("/weather/", response_model=list[schemas.CityOut])
+def read_cities(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+    items = crud.get_cities(db, skip=skip, limit=limit)
     return items
